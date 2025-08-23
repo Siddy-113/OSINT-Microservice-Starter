@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  # The FastAPI application service
+  api:
+    build: .
+    ports:
+      - "8000:80" # Map host port 8000 to container port 80
+    volumes:
+      - ./app:/code/app # Mount the app directory for live code reloading
+    environment:
+      - API_KEY=your-secret-api-key # IMPORTANT: Change this!
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - DATABASE_URL=postgresql://user:password@db:5432/mydatabase
+    depends_on:
+      - redis
+      - db
+
+  # The Celery worker service
+  worker:
+    build: .
+    command: celery -A app.main.celery_app worker --loglevel=info
+    volumes:
+      - ./app:/code/app
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - DATABASE_URL=postgresql://user:password@db:5432/mydatabase
+    depends_on:
+      - redis
+      - db
+
+  # The Redis service for Celery broker and backend
+  redis:
+    image: "redis:alpine"
+    ports:
+      - "6379:6379"
+
+  # The PostgreSQL database service
+  db:
+    image: postgres:13-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/ # Persist data
+    environment:
+      - POSTGRES_USER=postgresuser # IMPORTANT: Change this!
+      - POSTGRES_PASSWORD=HardToGuessPassword123! # IMPORTANT: Change this!
+      - POSTGRES_DB=mydatabase # IMPORTANT: Change this!
+    ports:
+      - "5432:5432"
+
+volumes:
+  postgres_data:

@@ -1,0 +1,18 @@
+fastapi
+uvicorn[standard]
+
+# Asynchronous Tasks
+celery
+redis
+
+# Database Connector (for PostgreSQL)
+psycopg2-binary
+sqlalchemy # Recommended for interacting with the DB
+
+# Add other libraries required by your specific microservice below.
+# For example:
+
+beautifulsoup4
+httpx
+feedparser
+spacy
