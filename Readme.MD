@@ -19,7 +19,7 @@ This project is built with Python, FastAPI, and Celery, and is containerized usi
 
     ```yaml
     environment:
-      - API_KEY=your-new-secure-secret-key
+      - SECRET_KEY=your-new-secure-secret-key
     ```
 
 2. **Dependencies:** Add any required Python libraries for this specific service to the `requirements.txt` file.

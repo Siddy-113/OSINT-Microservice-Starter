@@ -9,7 +9,7 @@ services:
     volumes:
       - ./app:/code/app # Mount the app directory for live code reloading
     environment:
-      - API_KEY=your-secret-api-key # IMPORTANT: Change this!
+      - SECRET_KEY=your-secret-api-key # IMPORTANT: Change this!
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
       - DATABASE_URL=postgresql://user:password@db:5432/mydatabase
