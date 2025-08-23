@@ -35,3 +35,13 @@ Execute the `start-dev.sh` script. This will build the Docker images (if they do
 ```bash
 chmod +x start-dev.sh
 ./start-dev.sh
+```
+
+### Folders to be used
+
+- Scrapping, Data Collection, NLP, AI logics will go in core\
+- Any service based things like API Calls or Business Logics will go in services\
+- Task Creations will go in tasks.py
+- Any model creation will go in models
+- main.py is the starter for the application
+- You can add folders like controllers, schemas, routes or docs if required for specific purpose.
