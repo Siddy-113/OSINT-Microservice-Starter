@@ -3,5 +3,8 @@ uvicorn
 celery[redis]
 redis
 requests
+requests[socks]
 beautifulsoup4
 stem
+pydantic
+python-dotenv

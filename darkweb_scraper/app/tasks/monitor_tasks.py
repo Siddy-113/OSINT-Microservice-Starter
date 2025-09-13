@@ -1,23 +1,43 @@
 from app.worker import celery
-import time
+from app.utils.logger import log
+from app.scraping.forum_scraper import ForumScraper
+from app.scraping.marketplace_scraper import MarketplaceScraper
+from app.scraping.paste_scraper import PasteScraper
+
+TARGETS = {
+    "forum": [
+        # "http://<redacted>.onion/subforum/..."
+    ],
+    "marketplace": [
+        # "http://<redacted>.onion/listings"
+    ],
+    "paste_site": [
+        # "http://<redacted>.onion/paste/..."
+    ],
+}
 
 @celery.task(bind=True)
 def monitor_keywords(self, keywords: list[str]):
-    # Simulate monitoring
-    time.sleep(3)
+    """
+    One-shot execution for demo. In production, run on a schedule/beat.
+    """
+    log.info("task_monitor_keywords", extra={"task_id": self.request.id, "keywords_count": len(keywords)})
+    results = []
+
+    forum = ForumScraper()
+    market = MarketplaceScraper()
+    paste = PasteScraper()
+
+    for url in TARGETS.get("forum", []):
+        results.extend(forum.scrape_for_keywords(url, keywords))
+    for url in TARGETS.get("marketplace", []):
+        results.extend(market.scrape_listings_for_keywords(url, keywords))
+    for url in TARGETS.get("paste_site", []):
+        results.extend(paste.scrape_paste_for_keywords(url, keywords))
+
     return {
         "status": "complete",
         "keywords": keywords,
-        "hits": [
-            {
-                "source_url": "http://pasteonion.onion/paste/abc",
-                "source_type": "paste_site",
-                "capture_timestamp": "2025-08-23T12:30:00Z",
-                "match_type": "keyword_match",
-                "matched_keyword": keywords[0],
-                "content_snippet": "This paste contains Aadhaar numbers...",
-                "author_username": "anonymous",
-                "post_url": "http://pasteonion.onion/paste/abc"
-            }
-        ]
+        "hits": results
     }
+

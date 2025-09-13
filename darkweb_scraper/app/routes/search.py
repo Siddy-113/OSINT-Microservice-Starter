@@ -9,10 +9,7 @@ class SearchRequest(BaseModel):
     identifier_type: str
     identifier_value: str
 
-@router.post("/")
+@router.post("/", response_model=SearchAcceptedResponse)
 async def search_target(request: SearchRequest):
     task = run_search.apply_async(args=[request.identifier_type, request.identifier_value])
-    return {
-        "message": "Dark web search task accepted.",
-        "task_id": task.id
-    }
+    return {"message": "Dark web search task accepted.", "task_id": task.id}
