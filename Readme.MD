@@ -1,47 +1,127 @@
-# OSINT Microservice: [Service Name]
+OSINT Dark Web Scraper Microservice
 
-## 1. Overview
+This microservice provides dark web scraping, monitoring, and keyword search as part of the larger OSINT Platform.
+It is built with FastAPI + Celery + Redis + Tor for asynchronous scraping and API integration.
 
-This microservice is responsible for [briefly describe the service's purpose, e.g., "scraping social media profiles based on user identifiers"]. It is part of a larger OSINT application for law enforcement.
+📂 Project Structure
+osint_scraper/
+│── app/
+│   ├── main.py              # FastAPI entrypoint
+│   ├── config.py            # Config & environment variables
+│   ├── models.py            # Data models (future ORM/DB schemas)
+│   ├── routes/              # API endpoints
+│   ├── tasks/               # Celery tasks
+│   ├── scraping/            # Scraper classes
+│   └── utils/               # Helpers (Tor client, logger, parser, alerts)
+│
+├── worker.py                # Celery worker entrypoint
+├── requirements.txt         # Python dependencies
+├── Dockerfile               # Container for microservice
+├── docker-compose.yml       # Orchestration with Redis & Tor
+├── start-dev.sh             # Quick dev startup
+└── README.md                # This file
 
-This project is built with Python, FastAPI, and Celery, and is containerized using Docker.
+⚙️ Setup
+1️⃣ Local Development
+# clone repo
+git clone https://github.com/your-org/osint-scraper.git
+cd osint-scraper
 
-## 2. Setup & Installation
+# create venv
+python3 -m venv venv
+source venv/bin/activate
 
-### Prerequisites
+# install deps
+pip install -r requirements.txt
 
-- Docker
-- Docker Compose
 
-### Configuration
+Start FastAPI app:
 
-1. **API Key:** Open the `docker-compose.yaml` file and change the default `API_KEY` environment variable to a strong, unique secret.
+uvicorn app.main:app --reload
 
-    ```yaml
-    environment:
-      - SECRET_KEY=your-new-secure-secret-key
-    ```
 
-2. **Dependencies:** Add any required Python libraries for this specific service to the `requirements.txt` file.
+Start Celery worker:
 
-## 3. How to Run (Local Development)
+celery -A worker.app worker --loglevel=info
 
-This project includes simple scripts to manage the Docker Compose environment.
+2️⃣ Docker + Compose (Recommended)
+docker-compose up --build
 
-### To start the service
 
-Execute the `start-dev.sh` script. This will build the Docker images (if they don't exist) and start the API, worker, Redis, and PostgreSQL containers in detached mode.
+This runs:
 
-```bash
-chmod +x start-dev.sh
-./start-dev.sh
-```
+FastAPI at http://localhost:8000
 
-### Folders to be used
+Redis (broker + result backend)
 
-- Scrapping, Data Collection, NLP, AI logics will go in core\
-- Any service based things like API Calls or Business Logics will go in services\
-- Task Creations will go in tasks.py
-- Any model creation will go in models
-- main.py is the starter for the application
-- You can add folders like controllers, schemas, routes or docs if required for specific purpose.
+Tor service (SOCKS5 proxy at tor:9050)
+
+Celery worker can be scaled with:
+
+docker-compose up --scale worker=3
+
+🚀 API Endpoints
+🔍 Search
+POST /search
+{
+  "keywords": ["bitcoin", "leak", "credentials"]
+}
+
+
+Response:
+
+{ "status": "submitted" }
+
+📡 Monitor
+POST /monitor
+{
+  "query": "ransomware"
+}
+
+📑 Results
+GET /results
+
+
+Returns mock results (replace with DB lookup later).
+
+🔄 Celery Tasks
+
+search_tasks.run_search(keywords) → Perform dark web keyword search
+
+monitor_tasks.monitor(query) → Periodically scrape sources and alert
+
+🛡️ Tor Integration
+
+All requests go through Tor SOCKS5 proxy with retry + backoff + opsec delays.
+You can trigger new Tor identity with:
+
+from app.utils.tor_client import TorSession
+TorSession.new_identity()
+
+🔔 Alerts
+
+Alerts module (app/utils/alerts.py) is a stub. Extend it to:
+
+Send email
+
+Push to Slack/Discord
+
+Trigger webhook
+
+📌 Roadmap
+
+ Add DB (Postgres / MongoDB) for results storage
+
+ Real scraper logic (forum_scraper, marketplace_scraper, paste_scraper)
+
+ Authentication for API endpoints
+
+ Alert delivery integrations
+
+👨‍💻 Development Notes
+
+Never log scraped PII/content → logger only stores operational metadata.
+
+Use config.py to override defaults via environment variables.
+
+Designed as a plug-and-play microservice inside bigger OSINT system.
