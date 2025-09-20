@@ -3,24 +3,6 @@ OSINT Dark Web Scraper Microservice
 This microservice provides dark web scraping, monitoring, and keyword search as part of the larger OSINT Platform.
 It is built with FastAPI + Celery + Redis + Tor for asynchronous scraping and API integration.
 
-📂 Project Structure
-osint_scraper/
-│── app/
-│   ├── main.py              # FastAPI entrypoint
-│   ├── config.py            # Config & environment variables
-│   ├── models.py            # Data models (future ORM/DB schemas)
-│   ├── routes/              # API endpoints
-│   ├── tasks/               # Celery tasks
-│   ├── scraping/            # Scraper classes
-│   └── utils/               # Helpers (Tor client, logger, parser, alerts)
-│
-├── worker.py                # Celery worker entrypoint
-├── requirements.txt         # Python dependencies
-├── Dockerfile               # Container for microservice
-├── docker-compose.yml       # Orchestration with Redis & Tor
-├── start-dev.sh             # Quick dev startup
-└── README.md                # This file
-
 ⚙️ Setup
 1️⃣ Local Development
 # clone repo
