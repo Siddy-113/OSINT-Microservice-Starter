@@ -1,19 +1,14 @@
 from fastapi import FastAPI
-from app.routes import search, monitor, results
+from app.routes import search_router, monitor_router, results_router
+from app.logger import log
 
-# Initialize FastAPI app
-app = FastAPI(
-    title="Dark Web Scraper Microservice",
-    description="Microservice for targeted and continuous dark web scraping with OPSEC measures.",
-    version="1.0.0",
-)
+app = FastAPI(title="OSINT Dark Web Scraper Microservice")
 
-# Register routers
-app.include_router(search.router, prefix="/search", tags=["Search"])
-app.include_router(monitor.router, prefix="/monitor", tags=["Monitor"])
-app.include_router(results.router, prefix="/results", tags=["Results"])
+# include routers
+app.include_router(search_router, prefix="", tags=["Search"])
+app.include_router(monitor_router, prefix="", tags=["Monitor"])
+app.include_router(results_router, prefix="", tags=["Results"])
 
-# Health check endpoint
 @app.get("/health", tags=["Health"])
-async def health_check():
-    return {"status": "ok", "message": "Dark Web Scraper API is running"}
+def health():
+    return {"status": "ok", "service": "darkweb-scraper"}

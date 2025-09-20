@@ -1,18 +1,24 @@
-from fastapi import APIRouter
-from pydantic import BaseModel
+from fastapi import APIRouter, HTTPException
+from app.models import KeywordRequest, KeywordAcceptedResponse
 from app.tasks.monitor_tasks import monitor_keywords
+from app.logger import log
 
 router = APIRouter()
 
-class KeywordRequest(BaseModel):
-    action: str
-    keywords: list[str]
+# Temporary in-memory watchlist (migrate to DB later)
+_watchlist = set()
 
-@router.post("/keywords", response_model=KeywordAcceptedResponse)
-async def manage_keywords(request: KeywordRequest):
-    if request.action == "add":
-        task = monitor_keywords.apply_async(args=[request.keywords])
-        return {"status": "success", "message": "Monitoring started", "task_id": task.id}
-    elif request.action == "remove":
-        # Integration point: remove from persistent keyword store (to be added)
-        return {"status": "success", "message": f"Removed keywords: {request.keywords}"}
+@router.post("/monitor/keywords", response_model=KeywordAcceptedResponse, tags=["Monitor"])
+async def manage_keywords(req: KeywordRequest):
+    if req.action == "add":
+        _watchlist.update(req.keywords)
+        task = monitor_keywords.apply_async(args=[list(req.keywords)])
+        log.info("monitor_keywords_added", extra={"count": len(req.keywords), "task_id": task.id})
+        return {"status": "success", "message": "Keywords added and monitoring started.", "task_id": task.id}
+    elif req.action == "remove":
+        for k in req.keywords:
+            _watchlist.discard(k)
+        log.info("monitor_keywords_removed", extra={"count": len(req.keywords)})
+        return {"status": "success", "message": "Keywords removed.", "task_id": None}
+    else:
+        raise HTTPException(status_code=400, detail="Invalid action")

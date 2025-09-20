@@ -1,14 +1,11 @@
 from typing import Dict, Any, List, Optional
 from datetime import datetime, timezone
 from app.utils.tor_client import TorSession
-from app.utils.logger import log
+from app.logger import log
 from app.utils.parser import to_soup
 
 class BaseScraper:
-    """
-    Common Tor-routed HTTP + parsing helpers.
-    """
-    source_type: str = "forum"  # override in subclasses: "forum" | "marketplace" | "paste_site"
+    source_type: str = "generic"
 
     def __init__(self):
         self.tor = TorSession()
@@ -22,7 +19,7 @@ class BaseScraper:
             resp = self.tor.get(url)
             if resp.status_code == 200 and resp.text:
                 return resp.text
-            log.info("fetch_non200_or_empty", extra={"status": resp.status_code})
+            log.info("fetch_non200_or_empty", extra={"status": getattr(resp, "status_code", None)})
         except Exception as e:
             log.warning("fetch_error", extra={"err": str(e)})
         return None
@@ -47,29 +44,16 @@ class BaseScraper:
             "post_url": post_url,
         }
 
-    # Example parse routine—subclasses should override appropriately.
+    # Default parser — subclasses should override based on site HTML
     def parse_generic_posts(self, html: str, base_url: str) -> List[Dict[str, Any]]:
         soup = to_soup(html)
         results = []
-        for post in soup.select(".post"):   # site-specific selector to be overridden
-            title = post.select_one(".title")
+        for post in soup.select(".post"):
+            content = post.select_one(".content")
             user = post.select_one(".user")
             link = post.select_one("a")
-            content = post.select_one(".content")
-
             snippet = (content.get_text(" ", strip=True) if content else "")[:800]
             author = user.get_text(strip=True) if user else None
             post_url = base_url if not link else link.get("href", base_url)
-
-            results.append(
-                self.normalize_result(
-                    source_url=base_url,
-                    match_type="keyword_match",
-                    content_snippet=snippet,
-                    author_username=author,
-                    post_url=post_url,
-                    matched_keyword=None,
-                )
-            )
+            results.append(self.normalize_result(base_url, "keyword_match", snippet, author, post_url, None))
         return results
-

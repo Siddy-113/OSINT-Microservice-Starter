@@ -1,0 +1,33 @@
+osint_scraper/
+├── app/
+│   ├── __init__.py
+│   ├── main.py
+│   ├── config.py
+│   ├── logger.py
+│   ├── models.py
+│   ├── routes/
+│   │   ├── __init__.py
+│   │   ├── search.py
+│   │   ├── monitor.py
+│   │   └── results.py
+│   ├── tasks/
+│   │   ├── __init__.py
+│   │   ├── search_tasks.py
+│   │   └── monitor_tasks.py
+│   ├── scraping/
+│   │   ├── __init__.py
+│   │   ├── base_scraper.py
+│   │   ├── forum_scraper.py
+│   │   ├── marketplace_scraper.py
+│   │   └── paste_scraper.py
+│   └── utils/
+│       ├── __init__.py
+│       ├── tor_client.py
+│       ├── parser.py
+│       ├── alerts.py
+│       └── logger.py
+├── worker.py
+├── requirements.txt
+├── Dockerfile
+├── docker-compose.yml
+└── README.md

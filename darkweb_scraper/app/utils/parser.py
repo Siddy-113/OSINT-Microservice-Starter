@@ -13,4 +13,3 @@ def text_or_none(node) -> Optional[str]:
 def select_text(soup: BeautifulSoup, selector: str) -> Optional[str]:
     el = soup.select_one(selector)
     return text_or_none(el)
-

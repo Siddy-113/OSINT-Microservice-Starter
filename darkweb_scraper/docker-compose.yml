@@ -1,39 +1,26 @@
-version: "3.9"
-
+version: "3.8"
 services:
   tor:
-    image: alpine:3.20
+    image: dperson/torproxy
     container_name: tor
-    command: >
-      sh -c "apk add --no-cache tor &&
-             mkdir -p /etc/tor &&
-             echo 'SOCKSPort 0.0.0.0:9050' > /etc/tor/torrc &&
-             echo 'ControlPort 0.0.0.0:9051' >> /etc/tor/torrc &&
-             echo 'CookieAuthentication 0' >> /etc/tor/torrc &&
-             echo 'HashedControlPassword ${TOR_HASHED_PASSWORD}' >> /etc/tor/torrc &&
-             tor -f /etc/tor/torrc -f /etc/tor/torrc"
     environment:
-      - TOR_HASHED_PASSWORD
+      - TRANSPARENT=true
     ports:
       - "9050:9050"
-      - "9051:9051"
-    restart: unless-stopped
 
   redis:
     image: redis:7-alpine
     container_name: redis
     ports:
       - "6379:6379"
-    restart: unless-stopped
 
   api:
     build: .
-    container_name: darkweb_api
+    container_name: osint_api
     depends_on:
       - redis
       - tor
     environment:
-      - ENVIRONMENT=prod
       - REDIS_URL=redis://redis:6379/0
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
@@ -44,16 +31,16 @@ services:
       - TOR_CONTROL_PASSWORD=changeme
     ports:
       - "8000:8000"
-    restart: unless-stopped
+    volumes:
+      - .:/srv/app
 
   worker:
     build: .
-    container_name: darkweb_worker
+    container_name: osint_worker
     depends_on:
       - redis
       - tor
     environment:
-      - ENVIRONMENT=prod
       - REDIS_URL=redis://redis:6379/0
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
@@ -63,5 +50,5 @@ services:
       - TOR_CONTROL_PORT=9051
       - TOR_CONTROL_PASSWORD=changeme
     command: ["celery", "-A", "worker.celery", "worker", "--loglevel=info", "-Q", "search,monitor"]
-    restart: unless-stopped
-
+    volumes:
+      - .:/srv/app
