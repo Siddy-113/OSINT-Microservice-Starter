@@ -4,16 +4,20 @@ This microservice provides dark web scraping, monitoring, and keyword search as 
 It is built with FastAPI + Celery + Redis + Tor for asynchronous scraping and API integration.
 
 ⚙️ Setup
-1️⃣ Local Development
-# clone repo
+#1️⃣ Local Development
+clone repo
+'''
 git clone https://github.com/your-org/osint-scraper.git
 cd osint-scraper
+'''
 
-# create venv
+create venv
+'''
 python3 -m venv venv
 source venv/bin/activate
+'''
 
-# install deps
+install deps
 pip install -r requirements.txt
 
 
