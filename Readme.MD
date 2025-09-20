@@ -1,4 +1,4 @@
-#OSINT Dark Web Scraper Microservice
+# OSINT Dark Web Scraper Microservice
 
 This microservice provides dark web scraping, monitoring, and keyword search as part of the larger OSINT Platform.
 It is built with FastAPI + Celery + Redis + Tor for asynchronous scraping and API integration.
